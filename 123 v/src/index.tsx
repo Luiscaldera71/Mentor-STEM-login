@@ -9,6 +9,7 @@ import { GoogleGenAI, Chat } from "@google/genai";
 declare global {
   interface ImportMeta {
     readonly env: {
+      readonly VITE_API_KEY: string;
       readonly VITE_FIREBASE_API_KEY: string;
       readonly VITE_FIREBASE_AUTH_DOMAIN: string;
       readonly VITE_FIREBASE_PROJECT_ID: string;
@@ -279,7 +280,7 @@ Your response for this stage **MUST** be ONLY the detailed plan in Markdown form
    - **Recursos Utilizados:** [List resources for THIS phase.]
    - **Tiempo Estimado:** [Allocate proportional time.]
 
-**7. OBSERVACIONES Y RECOMENDaciones**
+**7. OBSERVACIONES Y RECOMENDACIONES**
    - **Observaciones:** [Provide one or two useful tips for the teacher, e.g., "Se recomienda documentar el proceso con fotografías para crear un mural final", "Este proyecto puede adaptarse para..."]
 `;
 
@@ -335,15 +336,18 @@ async function init() {
         errorContainer.innerHTML = `<div class="login-box" style="text-align: left;"><h3 style="color: red;">Error de Configuración</h3><p>Las variables de entorno de Firebase (<code>VITE_FIREBASE_*</code>, incluyendo <code>VITE_FIREBASE_DATABASE_URL</code>) no están configuradas. Por favor, añádelas a tu archivo <strong>.env</strong> o en la configuración de tu proyecto en Vercel.</p></div>`;
         return;
     }
-    firebase.initializeApp(firebaseConfig);
+    // FIX: Prevent re-initialization error by checking if an app already exists.
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
     db = firebase.database();
   
     // Initialize Gemini
-    // FIX: Using process.env.API_KEY as per @google/genai guidelines.
-    if (!process.env.API_KEY) {
-        throw new Error("La variable de entorno API_KEY para Gemini no está definida.");
+    // FIX: Use import.meta.env for Vite environment variables, not process.env.
+    if (!import.meta.env.VITE_API_KEY) {
+        throw new Error("La variable de entorno VITE_API_KEY para Gemini no está definida.");
     }
-    ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
     chat = ai.chats.create({
       model: MODEL_NAME,
       config: { systemInstruction: SYSTEM_INSTRUCTION },
@@ -351,7 +355,7 @@ async function init() {
   } catch(e) {
     console.error("Error initializing services:", e);
     const errorContainer = document.getElementById('app-container') || document.body;
-    errorContainer.innerHTML = `<p style="color:red; padding:1em;">Error al inicializar los servicios. Asegúrate de que tus variables de entorno (VITE_API_KEY y VITE_FIREBASE_*) sean correctas. Consulta la consola para más detalles.</p>`;
+    errorContainer.innerHTML = `<p style="color:red; padding:1em;">Error al inicializar los servicios. Asegúrate de que tus variables de entorno (VITE_API_KEY y VITE_FIREBASE_*) sean correctas en la configuración de Vercel. Consulta la consola para más detalles.</p>`;
     return;
   }
   
