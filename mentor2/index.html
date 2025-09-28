@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MentorSTEM+</title>
+    <link rel="stylesheet" href="index.css">
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/genai": "https://esm.sh/@google/genai@^0.12.0"
+        }
+      }
+    </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h2>Bienvenido a MentorSTEM+</h2>
+                <p>Tu asistente IA para el diseño de proyectos.</p>
+            </div>
+            <div class="login-tabs">
+                <button id="login-tab-button" class="login-tab active" data-form="login-form">Iniciar Sesión</button>
+                <button id="register-tab-button" class="login-tab" data-form="register-form">Registrarse</button>
+            </div>
+            <form id="login-form" class="auth-form active">
+                <div class="form-group">
+                    <label for="login-username">Usuario o Correo</label>
+                    <input type="text" id="login-username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Contraseña</label>
+                    <input type="password" id="login-password" name="password" required>
+                </div>
+                <button type="submit">Entrar</button>
+            </form>
+            <form id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label for="register-username">Usuario o Correo</label>
+                    <input type="text" id="register-username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Contraseña</label>
+                    <input type="password" id="register-password" name="password" required>
+                </div>
+                <button type="submit">Crear Cuenta</button>
+            </form>
+            <p id="auth-error" class="auth-error-message"></p>
+        </div>
+    </div>
+
+    <div id="app-container" style="display: none;">
+        <header>
+            <div class="logo-title">
+                <h1>MentorSTEM+</h1>
+                <p class="subtitle">Tu asistente IA para el diseño de proyectos STEM+ innovadores.</p>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><button id="nav-home" class="nav-button active" title="Crear un nuevo proyecto">Inicio</button></li>
+                    <li>
+                        <button id="nav-history" class="nav-button" title="Ver proyectos guardados">
+                            Mis Proyectos
+                            <span id="history-badge" class="badge" style="display: none;"></span>
+                        </button>
+                    </li>
+                    <li><button id="nav-help" class="nav-button" title="Obtener ayuda">Ayuda</button></li>
+                    <li><button id="nav-logout" class="nav-button logout-button" title="Cerrar sesión">Cerrar Sesión</button></li>
+                </ul>
+            </nav>
+        </header>
+        <main>
+            <div id="project-form-container">
+                <div class="form-header-info">
+                    <span class="lightbulb-icon" aria-hidden="true">💡</span>
+                    <h2>Información del Proyecto</h2>
+                </div>
+                <p class="form-description">Completa los detalles para generar propuestas de proyectos STEM+.</p>
+                <form id="project-form" aria-labelledby="form-heading-main">
+                    <h2 id="form-heading-main" class="sr-only">Formulario de Información del Proyecto</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="grade">Grado Escolar</label>
+                            <select id="grade" name="grade" required aria-required="true">
+                                <option value="" disabled selected>Selecciona un grado</option>
+                                <option value="1">1er Grado</option>
+                                <option value="2">2do Grado</option>
+                                <option value="3">3er Grado</option>
+                                <option value="4">4to Grado</option>
+                                <option value="5">5to Grado</option>
+                                <option value="6">6to Grado</option>
+                                <option value="7">7mo Grado</option>
+                                <option value="8">8vo Grado</option>
+                                <option value="9">9no Grado</option>
+                                <option value="10">10mo Grado</option>
+                                <option value="11">11vo Grado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="topic">Tema Principal o Idea Central</label>
+                            <input type="text" id="topic" name="topic" required aria-required="true" placeholder="Ej: Energías renovables, Contaminación del agua">
+                        </div>
+                        <div class="form-group">
+                            <label for="resources">Disponibilidad de Recursos</label>
+                            <select id="resources" name="resources" required aria-required="true">
+                                <option value="" disabled selected>Selecciona una opción de recursos</option>
+                                <option value="A">A. Aula Tradicional: Pizarrón, marcadores, papel, reciclados. Acceso nulo a tecnología.</option>
+                                <option value="B">B. Aula con Apoyo Tecnológico Básico: Acceso ocasional a computadoras/internet.</option>
+                                <option value="C">C. Aula Tecnológicamente Integrada: Buena conectividad, acceso regular a dispositivos.</option>
+                                <option value="D">D. Acceso a Laboratorio/Taller Básico: Herramientas manuales, equipamiento estándar.</option>
+                                <option value="E">E. Acceso a Espacio Maker/STEM Avanzado: Impresoras 3D, robótica, sensores.</option>
+                                <option value="F">F. Entorno Exterior/Comunitario: Proyectos en patios, huertas, comunidad.</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="time">Tiempo Estimado del Proyecto</label>
+                            <input type="text" id="time" name="time" required aria-required="true" placeholder="Ej: 3 semanas, 10 sesiones, 1 mes">
+                        </div>
+                    </div>
+                    <button type="submit" id="submit-form-button">Generar Propuestas de Proyecto</button>
+                </form>
+            </div>
+
+            <div id="proposals-section" style="display: none;">
+                <h3 id="proposals-heading" class="section-heading">Propuestas de Proyecto Generadas</h3>
+                <p class="section-subheading">Selecciona una propuesta para ver el plan detallado.</p>
+                <div id="proposal-cards-area" class="proposal-cards-container">
+                    <!-- Proposal cards will be rendered here by JS -->
+                </div>
+            </div>
+
+            <div id="history-section" style="display: none;">
+                <div class="history-header">
+                    <h3 class="section-heading">Historial de Proyectos</h3>
+                    <button id="back-to-form-from-history-button" class="text-button">← Crear Nuevo Proyecto</button>
+                </div>
+                <p class="section-subheading">Revisa, edita o elimina los planes que has guardado.</p>
+                <div id="history-list-area" class="history-list-container">
+                    <!-- History items will be rendered here by JS -->
+                </div>
+            </div>
+
+            <div id="help-section" style="display: none;">
+                <h3 class="section-heading">Centro de Ayuda</h3>
+                <p class="section-subheading">¿Cómo usar MentorSTEM+?</p>
+                <div class="content-block-inner">
+                    <h4>1. Genera Propuestas</h4>
+                    <p>Ve a la pantalla de <strong>Inicio</strong>, completa los cuatro campos sobre tu proyecto (Grado, Tema, Recursos y Tiempo) y haz clic en "Generar Propuestas". La IA te dará tres ideas únicas.</p>
+                    <h4>2. Selecciona y Detalla</h4>
+                    <p>Elige la propuesta que más te guste y haz clic en "Seleccionar esta Propuesta". La IA creará un plan de proyecto completo y detallado, siguiendo la metodología STEM+ Córdoba.</p>
+                    <h4>3. Guarda y Edita</h4>
+                    <p>Una vez generado el plan, puedes guardarlo en "Mis Proyectos" para consultarlo más tarde. Desde allí, puedes ver el plan, editarlo manualmente para ajustarlo a tus necesidades, y finalmente imprimirlo o guardarlo como PDF.</p>
+                    <h4>4. Imprime tu Plan</h4>
+                    <p>Al imprimir, se te pedirá que completes el nombre del docente y de la institución educativa para que aparezcan en el encabezado del documento PDF final.</p>
+                    <h4>5. Envía tu Retroalimentación</h4>
+                    <p>Después de implementar un proyecto, ve a "Mis Proyectos" y haz clic en "Registrar Retroalimentación". Tu opinión es muy valiosa para nosotros.</p>
+                </div>
+            </div>
+
+            <div id="feedback-section" class="content-block" style="display: none;">
+                <!-- Feedback form will be rendered here by JS -->
+            </div>
+
+            <div id="detailed-plan-section" class="content-block" style="display: none;">
+                <!-- Detailed project plan will be rendered here by JS -->
+            </div>
+            
+            <div id="loading-indicator" style="display: none;" aria-label="Cargando">
+                <div class="spinner"></div>
+                Cargando...
+            </div>
+        </main>
+        <footer>
+            <p>Powered by Gemini API</p>
+        </footer>
+    </div>
+    
+    <!-- Podcast Player -->
+    <div id="podcast-player-container" aria-live="polite" aria-atomic="true" role="toolbar">
+        <div class="podcast-controls">
+            <button id="podcast-play-pause-btn" title="Reproducir/Pausar" aria-label="Reproducir/Pausar">
+                <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z"></path></svg>
+                <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+            </button>
+            <button id="podcast-stop-btn" title="Detener" aria-label="Detener">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6h12v12H6z"></path></svg>
+            </button>
+        </div>
+        <div class="podcast-progress-wrapper">
+            <div id="podcast-text-display">Presiona play para escuchar el resumen del proyecto.</div>
+            <div id="podcast-progress-bar-container">
+                <div id="podcast-progress-bar-fill"></div>
+            </div>
+        </div>
+        <div class="podcast-controls">
+            <button id="podcast-download-btn" title="Descargar Guion del Podcast (.txt)" aria-label="Descargar Guion del Podcast">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- PDF Info Modal -->
+    <div id="pdf-info-modal" class="modal-overlay">
+      <div class="modal-content">
+        <h2>Completar Información para el PDF</h2>
+        <p>Por favor, ingresa los siguientes datos para incluirlos en el documento.</p>
+        <form id="pdf-info-form">
+          <div class="form-group">
+            <label for="teacher-name">Docente(s) Responsable(s)</label>
+            <input type="text" id="teacher-name" name="teacher-name" required placeholder="Ej: Prof. Ana Pérez">
+          </div>
+          <div class="form-group">
+            <label for="school-name">Institución Educativa</label>
+            <input type="text" id="school-name" name="school-name" required placeholder="Ej: Escuela Normal Superior">
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="cancel-pdf-button">Cancelar</button>
+            <button type="submit" id="generate-pdf-button">Generar PDF</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Hidden file inputs for logos -->
+    <input type="file" id="logo-right-input" class="sr-only" accept="image/*">
+
+    <script type="module" src="index.tsx"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
